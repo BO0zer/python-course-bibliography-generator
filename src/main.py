@@ -5,6 +5,7 @@ from enum import Enum, unique
 
 import click
 
+from formatters.styles.apa import APACitationFormatter
 from formatters.styles.gost import GOSTCitationFormatter
 from logger import get_logger
 from readers.reader import SourcesReader
@@ -77,14 +78,23 @@ def process_input(
     )
 
     models = SourcesReader(path_input).read()
-    formatted_models = tuple(
-        str(item) for item in GOSTCitationFormatter(models).format()
-    )
+    match citation:
+        case CitationEnum.GOST.name:
+            formatted_models = tuple(
+                str(item) for item in GOSTCitationFormatter(models).format()
+            )
+            logger.info("Генерация выходного файла %s...", citation)
+            Renderer(formatted_models).render(path_output)
 
-    logger.info("Генерация выходного файла ...")
-    Renderer(formatted_models).render(path_output)
+            logger.info("Команда успешно завершена.")
+        case CitationEnum.APA.name:
+            formatted_models = tuple(
+                str(item) for item in APACitationFormatter(models).format()
+            )
+            logger.info("Генерация выходного файла %s...", citation)
+            Renderer(formatted_models).render(path_output)
 
-    logger.info("Команда успешно завершена.")
+            logger.info("Команда успешно завершена.")
 
 
 if __name__ == "__main__":
